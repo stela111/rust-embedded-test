@@ -55,7 +55,10 @@ impl<BusT: Bus> Ssd1306<BusT> {
         self.col = col;
         self.set_page();
     }
-    pub fn write_ch(&mut self, ch: char) {
+    pub fn get_pos(&self) -> (u8, u8) {
+        (self.row, self.col)
+    }
+    pub fn write_char(&mut self, ch: char) {
         self.set_page();
         let ch = ch as usize;
         self.bus.send_data(FONT[(ch*5)..(ch*5+5)].iter().cloned());
@@ -69,11 +72,17 @@ impl<BusT: Bus> Ssd1306<BusT> {
         }
     }
 
-    pub fn write(&mut self, text: &str)
+    pub fn write_str(&mut self, string: &str)
     {
-        for ch in text.chars()
+        self.write_chars(string.chars());
+    }
+
+    pub fn write_chars<T: IntoIterator<Item = char>>(&mut self, text: T)
+    {
+        for ch in text
         {
-            self.write_ch(ch);
+            self.write_char(ch);
         }
     }
+
 }
