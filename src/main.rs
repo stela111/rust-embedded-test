@@ -15,7 +15,6 @@ use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rt::entry;
 use stm32f4xx_hal::gpio::PinState;
 use stm32f4xx_hal::pac;
-use stm32f4xx_hal::i2c;
 use stm32f4xx_hal::prelude::*;
 
 fn u16_to_chars(v: u16) -> [char; 5]
@@ -70,7 +69,7 @@ fn main() -> ! {
 
     let encoder = dp.TIM1.qei((s1, s2));
 
-    let i2c = dp.I2C1.i2c((scl, sda), i2c::Mode::from(500_000.Hz()), &clocks);
+    let i2c = dp.I2C1.i2c((scl, sda), 500_000.Hz(), &clocks);
     let bus = i2c_bus::I2cBus::new(i2c);
     let mut oled = ssd_1306::Ssd1306::new(bus);
     oled.init();
