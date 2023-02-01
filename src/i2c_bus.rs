@@ -1,25 +1,38 @@
 use crate::ssd_1306;
 use core::iter;
-use stm32f4xx_hal::i2c;
+use core::fmt::Debug;
+use embedded_hal::blocking::i2c::WriteIter;
 
-pub struct I2cBus<I:i2c::Instance,P> {
+pub struct I2cBus<I, E>
+where
+    I: WriteIter<Error = E>,
+    E: Debug
+{
     addr: u8,
-    i2c: i2c::I2c<I,P>
+    i2c: I
 }
 
-impl<I:i2c::Instance,P> I2cBus<I,P> {
-    pub fn new(i2c: i2c::I2c<I,P>) -> I2cBus<I,P> {
+impl<I, E> I2cBus<I, E>
+where
+    I: WriteIter<Error = E>,
+    E: Debug
+{
+    pub fn new(i2c: I) -> I2cBus<I, E> {
         I2cBus {
             addr: 0x3c,
-            i2c: i2c
+            i2c
         }
     }
 }
 
-impl<I:i2c::Instance,P> ssd_1306::Bus for I2cBus<I,P> {
+impl<I, E> ssd_1306::Bus for I2cBus<I, E>
+where
+    I: WriteIter<Error = E>,
+    E: Debug
+{
     fn send_command(&mut self, cmd: &[u8]) {
         let data = iter::once(0).chain(cmd.iter().cloned());
-        self.i2c.write_iter(self.addr, data).unwrap();
+        self.i2c.write(self.addr, data).unwrap();
     }
     // fn send_data(&mut self, data: &[u8]) {
     //     let head = &[0x40];
@@ -31,6 +44,6 @@ impl<I:i2c::Instance,P> ssd_1306::Bus for I2cBus<I,P> {
         D: IntoIterator<Item = u8>,
     {
         let data = iter::once(0x40).chain(data);
-        self.i2c.write_iter(self.addr, data).unwrap();
+        self.i2c.write(self.addr, data).unwrap();
     }
 }
